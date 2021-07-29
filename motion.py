@@ -13,10 +13,14 @@ while True:
         continue
 
     blured_frame=cv2.absdiff(frame_first,gray_scale_img)
+    
+    threshold_frame=cv2.threshold(blured_frame,35,255,cv2.THRESH_BINARY)[1]
+    threshold_frame=cv2.dilate(threshold_frame,None,iterations=3)
 
     cv2.imshow('Normal Frame',frame)
     cv2.imshow('Gray Scale Image',gray_scale_img)
     cv2.imshow('Blur Frame',blured_frame)
+    cv2.imshow('Threshold Frame',threshold_frame)
 
     press_key=cv2.waitKey(1)
     if press_key==ord('q'):
