@@ -1,18 +1,26 @@
-import cv2,time
-video=cv2.VideoCapture(0)
-a=0
+import cv2
+
+frame_first=None
+face_capture=cv2.VideoCapture(0)
+
 while True:
-    a+=1
-    check,frame=video.read()
+    check,frame=face_capture.read()
+    gray_scale_img=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    gray_scale_img=cv2.GaussianBlur(gray_scale_img,(21,21),0)
 
-    gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    if frame_first is None:
+        frame_first=gray_scale_img
+        continue
 
-    cv2.imshow('Capturing',gray)
+    blured_frame=cv2.absdiff(frame_first,gray_scale_img)
 
-    key=cv2.waitKey(1)
-    print(gray)
-    if key==ord('q'):
+    cv2.imshow('Normal Frame',frame)
+    cv2.imshow('Gray Scale Image',gray_scale_img)
+    cv2.imshow('Blur Frame',blured_frame)
+
+    press_key=cv2.waitKey(1)
+    if press_key==ord('q'):
         break
-print(a)
-video.release()
-cv2.destroyAllWindows
+    
+face_capture.release()
+cv2.destroyAllWindows()
