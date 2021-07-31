@@ -1,10 +1,16 @@
-import cv2
+import cv2,pandas
+from datetime import datetime
 
 frame_first=None
+timing=[]
+status_list=[None,None]
 face_capture=cv2.VideoCapture(0)
+
+my_data=pandas.DataFrame(columns=["Enter Time","Exit Time"])
 
 while True:
     check,frame=face_capture.read()
+    img_status=0
     gray_scale_img=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     gray_scale_img=cv2.GaussianBlur(gray_scale_img,(21,21),0)
 
@@ -15,18 +21,24 @@ while True:
     blured_frame=cv2.absdiff(frame_first,gray_scale_img)
     
     #Threshold Frame
-    threshold_frame=cv2.threshold(blured_frame,35,255,cv2.THRESH_BINARY)[1]
+    threshold_frame=cv2.threshold(blured_frame,40,255,cv2.THRESH_BINARY)[1]
     #Clear frame
     threshold_frame=cv2.dilate(threshold_frame,None,iterations=3)
 
     #Countour
     (contour,_)=cv2.findContours(threshold_frame.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     for cntr in contour:
-        if cv2.contourArea(cntr)<1000:
+        if cv2.contourArea(cntr)<10000:
             continue
-
+        img_status=1
         (x,y,w,h)=cv2.boundingRect(cntr)
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+
+    status_list.append(img_status)
+    if status_list[-1]==1 and status_list[-2]==0:
+        timing.append(datetime.now())
+    if status_list[-1]==0 and status_list[-2]==1:
+        timing.append(datetime.now())
 
     cv2.imshow('Normal Frame',frame) #Normal Image
     cv2.imshow('Gray Scale Image',gray_scale_img) #Gray Image
@@ -35,7 +47,14 @@ while True:
 
     press_key=cv2.waitKey(1)
     if press_key==ord('q'):
+        if img_status==1:
+            timing.append(datetime.now())
         break
-    
+
+for x in range(0,len(timing),2):
+    my_data=my_data.append({"Enter Time":timing[x],"Exit Time":timing[x+1]},ignore_index=True)
+
+my_data.to_csv('Timings.csv')
+
 face_capture.release()
 cv2.destroyAllWindows()
