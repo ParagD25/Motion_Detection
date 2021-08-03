@@ -35,6 +35,8 @@ while True:
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
 
     status_list.append(img_status)
+    status_list=status_list[-2:]
+    
     if status_list[-1]==1 and status_list[-2]==0:
         timing.append(datetime.now())
     if status_list[-1]==0 and status_list[-2]==1:
